@@ -119,11 +119,20 @@ Then, specify your own CUDA paths depending on your CUDA version:
 export CPATH=/usr/local/cuda-X.Y/targets/x86_64-linux/include:$CPATH
 export LD_LIBRARY_PATH=/usr/local/cuda-X.Y/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
 export PATH=/usr/local/cuda-X.Y/bin:$PATH
+export TORCH_CUDA_ARCH_LIST="8.9"
+```
+
+
+Before installing or compiling anything, reset and load the correct CUDA module:
+```bash
+module purge
+module avail cuda
+module load cuda/11.8.0_gcc-X.X.X
 ```
 
 Finally, you can run the following script to install all dependencies, including PyTorch and Gaussian Splatting submodules:
 ```bash
-python install.py --cuda_version X.Y  # Replace X.Y with your CUDA version
+python install.py --cuda_version X.Y  # Replace X.Y with your CUDA version 11.8 test
 ```
 
 **Supported CUDA versions:**

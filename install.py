@@ -3,15 +3,26 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Setup the environment')
-    
-    parser.add_argument('--cuda_version', type=str, default='11.8', help='CUDA version to use', choices=['11.8', '12.1'])
+
+    parser.add_argument('--cuda_version', type=str, default='11.8', help='CUDA version to use', choices=['11.8', '12.1', '12.2'])
     args = parser.parse_args()
-    
+
     print(f"[INFO] Installing environment...")
-    
+
+    # Map CUDA version to PyTorch CUDA version
+    # CUDA 12.2 is backward compatible with PyTorch built for CUDA 12.1
+    pytorch_cuda_version = args.cuda_version
+    if args.cuda_version == '12.2':
+        pytorch_cuda_version = '12.1'
+        print(f"[INFO] CUDA 12.2 detected. Using PyTorch built for CUDA 12.1 (backward compatible).")
+        print(f"[INFO] Make sure your CUDA 12.2 paths are set correctly:")
+        print(f"       export CPATH=/usr/local/cuda-12.2/targets/x86_64-linux/include:$CPATH")
+        print(f"       export LD_LIBRARY_PATH=/usr/local/cuda-12.2/targets/x86_64-linux/lib:$LD_LIBRARY_PATH")
+        print(f"       export PATH=/usr/local/cuda-12.2/bin:$PATH")
+
     # Install torch
     print(f"[INFO] Installing torch...")
-    os.system(f"conda install -y pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda={args.cuda_version} mkl=2023.1.0 -c pytorch -c nvidia")
+    os.system(f"conda install -y pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda={pytorch_cuda_version} mkl=2023.1.0 -c pytorch -c nvidia")
     print(f"[INFO] Torch installed.")
     
     # Install requirements

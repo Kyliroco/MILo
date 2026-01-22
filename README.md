@@ -111,7 +111,7 @@ Please start by creating an environment:
 ```bash
 conda create -n milo python=3.9
 conda activate milo
-conda install -y -c conda-forge cgal cmake<4 gmp mpfr boost
+conda install -y -c conda-forge cgal cmake<4 gmp mpfr boost ninja
 ```
 
 Then, specify your own CUDA paths depending on your CUDA version:

@@ -1,24 +1,57 @@
 import os
+import re
 import argparse
+
+
+def parse_cuda_version(version_str):
+    """Parse CUDA version string and return (major, minor) tuple."""
+    match = re.match(r'^(\d+)\.(\d+)$', version_str)
+    if not match:
+        raise ValueError(f"Invalid CUDA version format: {version_str}. Expected format: X.Y (e.g., 11.8, 12.1)")
+    return int(match.group(1)), int(match.group(2))
+
+
+def get_pytorch_cuda_version(cuda_version):
+    """
+    Map system CUDA version to compatible PyTorch CUDA version.
+    PyTorch 2.3.1 supports: pytorch-cuda=11.8 and pytorch-cuda=12.1
+    CUDA is backward compatible within major versions.
+    """
+    major, minor = parse_cuda_version(cuda_version)
+
+    if major == 11:
+        if minor < 8:
+            print(f"[WARNING] CUDA {cuda_version} is older than 11.8. Using pytorch-cuda=11.8 (may have compatibility issues).")
+        return '11.8'
+    elif major >= 12:
+        # All CUDA 12.x versions are backward compatible with PyTorch built for 12.1
+        return '12.1'
+    else:
+        raise ValueError(f"CUDA {cuda_version} is not supported. Minimum supported version is 11.x")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Setup the environment')
 
-    parser.add_argument('--cuda_version', type=str, default='11.8', help='CUDA version to use', choices=['11.8', '12.1', '12.2'])
+    parser.add_argument('--cuda_version', type=str, default='11.8',
+                        help='CUDA version to use (e.g., 11.8, 12.1, 12.2, 12.4, 12.6...)')
     args = parser.parse_args()
 
     print(f"[INFO] Installing environment...")
 
     # Map CUDA version to PyTorch CUDA version
-    # CUDA 12.2 is backward compatible with PyTorch built for CUDA 12.1
-    pytorch_cuda_version = args.cuda_version
-    if args.cuda_version == '12.2':
-        pytorch_cuda_version = '12.1'
-        print(f"[INFO] CUDA 12.2 detected. Using PyTorch built for CUDA 12.1 (backward compatible).")
-        print(f"[INFO] Make sure your CUDA 12.2 paths are set correctly:")
-        print(f"       export CPATH=/usr/local/cuda-12.2/targets/x86_64-linux/include:$CPATH")
-        print(f"       export LD_LIBRARY_PATH=/usr/local/cuda-12.2/targets/x86_64-linux/lib:$LD_LIBRARY_PATH")
-        print(f"       export PATH=/usr/local/cuda-12.2/bin:$PATH")
+    try:
+        pytorch_cuda_version = get_pytorch_cuda_version(args.cuda_version)
+    except ValueError as e:
+        print(f"[ERROR] {e}")
+        exit(1)
+
+    if args.cuda_version != pytorch_cuda_version:
+        print(f"[INFO] CUDA {args.cuda_version} detected. Using PyTorch built for CUDA {pytorch_cuda_version} (backward compatible).")
+        print(f"[INFO] Make sure your CUDA {args.cuda_version} paths are set correctly:")
+        print(f"       export CPATH=/usr/local/cuda-{args.cuda_version}/targets/x86_64-linux/include:$CPATH")
+        print(f"       export LD_LIBRARY_PATH=/usr/local/cuda-{args.cuda_version}/targets/x86_64-linux/lib:$LD_LIBRARY_PATH")
+        print(f"       export PATH=/usr/local/cuda-{args.cuda_version}/bin:$PATH")
 
     # Install torch
     print(f"[INFO] Installing torch...")

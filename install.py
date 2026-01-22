@@ -151,7 +151,8 @@ if __name__ == '__main__':
     ]
 
     for path, name in submodules:
-        if not run_command(f"{sys.executable} -m pip install {path}", f"Installing {name}", check=False):
+        # Use --no-build-isolation so pip can access the installed torch package
+        if not run_command(f"{sys.executable} -m pip install --no-build-isolation {path}", f"Installing {name}", check=False):
             print(f"[WARNING] Failed to install {name}. You may need to install it manually.")
 
     # Install Triangulation dependencies

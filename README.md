@@ -111,21 +111,36 @@ Please start by creating an environment:
 ```bash
 conda create -n milo python=3.9
 conda activate milo
+conda install -y -c conda-forge cgal cmake<4 gmp mpfr boost ninja
 ```
 
 Then, specify your own CUDA paths depending on your CUDA version:
 ```bash
-# You can specify your own cuda path (depending on your CUDA version)
-export CPATH=/usr/local/cuda-11.8/targets/x86_64-linux/include:$CPATH
-export LD_LIBRARY_PATH=/usr/local/cuda-11.8/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
-export PATH=/usr/local/cuda-11.8/bin:$PATH
+# Replace X.Y with your CUDA version (e.g., 11.8, 12.1, 12.2, 12.4, 12.6...)
+export CPATH=/usr/local/cuda-X.Y/targets/x86_64-linux/include:$CPATH
+export LD_LIBRARY_PATH=/usr/local/cuda-X.Y/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda-X.Y/bin:$PATH
+export TORCH_CUDA_ARCH_LIST="8.9"
+```
+
+
+Before installing or compiling anything, reset and load the correct CUDA module:
+```bash
+module purge
+module avail cuda
+module load cuda/11.8.0_gcc-X.X.X
 ```
 
 Finally, you can run the following script to install all dependencies, including PyTorch and Gaussian Splatting submodules:
 ```bash
-python install.py
+python install.py --cuda_version X.Y  # Replace X.Y with your CUDA version 11.8 test
 ```
-By default, the environment will be installed for CUDA 11.8. If using CUDA 12.1, you can provide the argument `--cuda_version 12.1` to `install.py`. **Please note that only CUDA 11.8 has been tested.**
+
+**Supported CUDA versions:**
+- **CUDA 11.x** (11.8 recommended) → uses `pytorch-cuda=11.8`
+- **CUDA 12.x** (12.1, 12.2, 12.4, 12.6...) → uses `pytorch-cuda=12.1` (backward compatible)
+
+Only CUDA 11.8 has been fully tested. Higher versions should work due to backward compatibility.
 
 If you encounter problems or if the installation script does not work, please follow the detailed installation steps below.
 
@@ -133,10 +148,10 @@ If you encounter problems or if the installation script does not work, please fo
 <summary>Click here for detailed installation instructions</summary>
 
 ```bash
-# For CUDA 11.8
+# For CUDA 11.x (use pytorch-cuda=11.8)
 conda install pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=11.8 mkl=2023.1.0 -c pytorch -c nvidia
 
-# For CUDA 12.1 (The code has only been tested on CUDA 11.8)
+# For CUDA 12.x (12.1, 12.2, 12.4, 12.6...) - use pytorch-cuda=12.1 (backward compatible)
 conda install pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=12.1 mkl=2023.1.0 -c pytorch -c nvidia
 
 pip install -r requirements.txt
@@ -154,10 +169,10 @@ conda install cmake
 conda install conda-forge::gmp
 conda install conda-forge::cgal
 
-# You can specify your own cuda path (depending on your CUDA version)
-export CPATH=/usr/local/cuda-11.8/targets/x86_64-linux/include:$CPATH
-export LD_LIBRARY_PATH=/usr/local/cuda-11.8/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
-export PATH=/usr/local/cuda-11.8/bin:$PATH
+# Specify your CUDA path (replace X.Y with your version: 11.8, 12.1, 12.2, 12.4, etc.)
+export CPATH=/usr/local/cuda-X.Y/targets/x86_64-linux/include:$CPATH
+export LD_LIBRARY_PATH=/usr/local/cuda-X.Y/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda-X.Y/bin:$PATH
 
 cmake .
 make 
